@@ -147,20 +147,33 @@ if(BUILD_TESTING)
   enable_testing()
   include(FetchContent)
 
-  # Fetch GoogleTest if not present
+  # Fetch GoogleTest if not present (using upstream git repo)
   FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
     GIT_TAG        release-1.13.0
   )
+  # Make the googletest targets available (gtest, gtest_main)
   FetchContent_MakeAvailable(googletest)
 
-  # Example test target (replace with real test sources)
-  add_executable(${PROJECT_NAME}_tests
-    # tests/test_example.cpp
+  # Add your test sources here. Add tests/test_math_operations.cpp (example)
+  set(TEST_SOURCES
+    tests/test_math_operations.cpp
+  )
+
+  # Create the test executable and link it to gtest_main and the library
+  add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES})
+  target_include_directories(${PROJECT_NAME}_tests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR} # in case tests include headers from project root
   )
   target_link_libraries(${PROJECT_NAME}_tests PRIVATE gtest_main ${PROJECT_NAME}_lib)
+
+  # Enable nice output for tests (use CTest)
   add_test(NAME ${PROJECT_NAME}_unit_tests COMMAND ${PROJECT_NAME}_tests)
+
+  # Optionally set test properties (e.g., timeout)
+  set_tests_properties(${PROJECT_NAME}_unit_tests PROPERTIES TIMEOUT 120)
 endif()
 
 # -------------------------
