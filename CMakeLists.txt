@@ -10,7 +10,6 @@ project(MyProject
 # -------------------------
 # General configuration
 # -------------------------
-# Build type if not specified by the user (Release/Debug/RelWithDebInfo)
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
 endif()
@@ -30,17 +29,15 @@ option(BUILD_TESTING "Enable building tests" ON)
 option(ENABLE_SANITIZERS "Enable Address/Undefined sanitizers (Debug builds only)" OFF)
 option(ENABLE_COVERAGE "Enable coverage flags (gcc/clang, only for Debug)" OFF)
 
-include(GNUInstallDirs) # sets CMAKE_INSTALL_* dirs
+include(GNUInstallDirs)
 
 # -------------------------
 # Compiler warnings / flags
 # -------------------------
 if(MSVC)
-  target_compile_options_global = "/W4"
+  add_compile_options(/W4)
 else()
-  # Enable common warnings for gcc/clang
   add_compile_options(-Wall -Wextra -Wpedantic)
-  # Treat warnings as errors if requested
   option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
   if(WARNINGS_AS_ERRORS)
     if(MSVC)
@@ -75,18 +72,10 @@ endif()
 # -------------------------
 # Source and targets
 # -------------------------
-# NOTE: Replace the example sources below with your real source files.
-# Recommended layout:
-#  - include/ (public headers)
-#  - src/ (library sources)
-#  - app/ (binaries)
-#  - tests/ (tests)
-
-# Library target example
 add_library(${PROJECT_NAME}_lib
   # src/example.cpp
 )
-# Public include dir for consumers
+
 target_include_directories(${PROJECT_NAME}_lib
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -95,14 +84,13 @@ target_include_directories(${PROJECT_NAME}_lib
 
 target_compile_features(${PROJECT_NAME}_lib PUBLIC cxx_std_17)
 
-# Executable example (comment out if not needed)
+# Example executable
 # add_executable(${PROJECT_NAME}_exe app/main.cpp)
 # target_link_libraries(${PROJECT_NAME}_exe PRIVATE ${PROJECT_NAME}_lib)
 
 # -------------------------
 # Installation
 # -------------------------
-# Install targets (adjust target names to your project)
 install(TARGETS ${PROJECT_NAME}_lib
   EXPORT ${PROJECT_NAME}Targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -112,14 +100,12 @@ install(TARGETS ${PROJECT_NAME}_lib
 
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-# Export the package for use with find_package
 install(EXPORT ${PROJECT_NAME}Targets
   FILE ${PROJECT_NAME}Targets.cmake
   NAMESPACE ${PROJECT_NAME}::
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
 
-# Generate a basic package config file
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
@@ -128,7 +114,7 @@ write_basic_package_version_file(
 )
 
 configure_package_config_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in" # optional: you can create this
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
   INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
   NO_CHECK_REQUIRED_COMPONENTS_MACRO
@@ -147,32 +133,24 @@ if(BUILD_TESTING)
   enable_testing()
   include(FetchContent)
 
-  # Fetch GoogleTest if not present (using upstream git repo)
   FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        release-1.13.0
+    GIT_TAG release-1.13.0
   )
-  # Make the googletest targets available (gtest, gtest_main)
   FetchContent_MakeAvailable(googletest)
 
-  # Add your test sources here. Add tests/test_math_operations.cpp (example)
   set(TEST_SOURCES
     tests/test_math_operations.cpp
   )
 
-  # Create the test executable and link it to gtest_main and the library
   add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES})
   target_include_directories(${PROJECT_NAME}_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR} # in case tests include headers from project root
+    ${CMAKE_CURRENT_SOURCE_DIR}
   )
   target_link_libraries(${PROJECT_NAME}_tests PRIVATE gtest_main ${PROJECT_NAME}_lib)
-
-  # Enable nice output for tests (use CTest)
   add_test(NAME ${PROJECT_NAME}_unit_tests COMMAND ${PROJECT_NAME}_tests)
-
-  # Optionally set test properties (e.g., timeout)
   set_tests_properties(${PROJECT_NAME}_unit_tests PROPERTIES TIMEOUT 120)
 endif()
 
@@ -191,11 +169,14 @@ include(CPack)
 # -------------------------
 # Helper targets / utilities
 # -------------------------
-# `make format` target (requires clang-format)
 find_program(CLANG_FORMAT NAMES clang-format clang-format-12 clang-format-11)
 if(CLANG_FORMAT)
   file(GLOB_RECURSE ALL_CXX_SOURCE_FILES CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/include/*.h" "${CMAKE_SOURCE_DIR}/include/*.hpp" "${CMAKE_SOURCE_DIR}/app/*.cpp" "${CMAKE_SOURCE_DIR}/tests/*.cpp"
+    "${CMAKE_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_SOURCE_DIR}/include/*.h"
+    "${CMAKE_SOURCE_DIR}/include/*.hpp"
+    "${CMAKE_SOURCE_DIR}/app/*.cpp"
+    "${CMAKE_SOURCE_DIR}/tests/*.cpp"
   )
   add_custom_target(format
     COMMAND ${CLANG_FORMAT} -i ${ALL_CXX_SOURCE_FILES}
