@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/MyProject_tests.dir/link.d CMakeFiles/MyProject_tests.dir/tests/unit_tests.cpp.o -o MyProject_tests  libMyProject_lib.a lib/libgtest_main.a lib/libgtest.a
