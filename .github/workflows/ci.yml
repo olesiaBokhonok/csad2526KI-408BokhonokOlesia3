@@ -3,12 +3,16 @@ name: CI - Cross Platform Build
 on:
   push:
     branches:
-      - '*develop*'
-      - '*master*'
+      - 'develop'
+      - 'develop/**'
+      - 'master'
+      - 'master/**'
   pull_request:
     branches:
-      - '*develop*'
-      - '*master*'
+      - 'develop'
+      - 'develop/**'
+      - 'master'
+      - 'master/**'
 
 jobs:
   cross_build:
@@ -23,46 +27,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install CMake (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake build-essential
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1
 
-      - name: Install CMake (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew update
-          brew install cmake
-
-      - name: Install CMake (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          choco install -y cmake
-
-      - name: Configure and build (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Configure and Build
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build -- -j$(nproc)
-
-      - name: Configure and build (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build -- -j$(sysctl -n hw.ncpu)
-
-      - name: Configure and build (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: powershell
-        run: |
-          cmake -S . -B build -A x64
-          cmake --build build --config Release -- /m
+          cmake --build build --config Release
+        shell: bash
 
       - name: Package artifacts
         run: |
           mkdir -p artifacts
-          cp -r build/* artifacts/ || true
+          if [ -d build ]; then
+            cp -r build/* artifacts/ || true
+          fi
+        shell: bash
         if: always()
 
       - name: Upload build artifacts
