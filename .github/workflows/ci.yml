@@ -1,0 +1,72 @@
+name: CI - Cross Platform Build
+
+on:
+  push:
+    branches:
+      - '*develop*'
+      - '*master*'
+  pull_request:
+    branches:
+      - '*develop*'
+      - '*master*'
+
+jobs:
+  cross_build:
+    name: cross_build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install CMake (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential
+
+      - name: Install CMake (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew update
+          brew install cmake
+
+      - name: Install CMake (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install -y cmake
+
+      - name: Configure and build (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -- -j$(nproc)
+
+      - name: Configure and build (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -- -j$(sysctl -n hw.ncpu)
+
+      - name: Configure and build (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+        run: |
+          cmake -S . -B build -A x64
+          cmake --build build --config Release -- /m
+
+      - name: Package artifacts
+        run: |
+          mkdir -p artifacts
+          cp -r build/* artifacts/ || true
+        if: always()
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.os }}
+          path: artifacts
