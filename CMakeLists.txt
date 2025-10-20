@@ -12,29 +12,38 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(BUILD_TESTING "Enable building tests" ON)
 
 # -------------------------
-# Source and targets
+# Основна бібліотека
 # -------------------------
 add_library(${PROJECT_NAME}_lib math_operations.cpp)
 target_include_directories(${PROJECT_NAME}_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+# -------------------------
+# Основна програма
+# -------------------------
 add_executable(${PROJECT_NAME}_exe main.cpp)
 target_link_libraries(${PROJECT_NAME}_exe PRIVATE ${PROJECT_NAME}_lib)
 
 # -------------------------
-# Testing (GoogleTest)
+# Юніт-тести (GoogleTest)
 # -------------------------
 if(BUILD_TESTING)
   enable_testing()
   include(FetchContent)
 
+  # Завантаження GoogleTest (остання стабільна версія)
   FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG main  # актуальна версія без помилки
+    GIT_TAG main
   )
   FetchContent_MakeAvailable(googletest)
 
-  add_executable(${PROJECT_NAME}_tests tests/unit_tests.cpp)
+  # ⚠️ ВАЖЛИВО: додаємо і tests/unit_tests.cpp, і math_operations.cpp
+  add_executable(${PROJECT_NAME}_tests
+    tests/unit_tests.cpp
+    math_operations.cpp
+  )
+
   target_link_libraries(${PROJECT_NAME}_tests PRIVATE gtest_main ${PROJECT_NAME}_lib)
 
   add_test(NAME ${PROJECT_NAME}_unit_tests COMMAND ${PROJECT_NAME}_tests)
