@@ -37,7 +37,6 @@ jobs:
         shell: pwsh
         run: |
           choco install -y cmake
-          # ensure choco-installed tools are available in PATH in the same session
           refreshenv || true
 
       - name: Install CMake (macOS)
@@ -52,14 +51,12 @@ jobs:
 
       - name: Build (Linux/macOS)
         if: runner.os != 'Windows'
-        run: |
-          ./ci.sh
+        run: ./ci.sh
 
       - name: Build (Windows)
         if: runner.os == 'Windows'
         shell: cmd
-        run: .\ci.bat
+        run: .\ci.cmd
 
       - name: Deploy
-        run: |
-          echo "Deploy placeholder — replace with real deploy commands or script"
+        run: echo "Deploy placeholder — replace with real deploy commands or script"
