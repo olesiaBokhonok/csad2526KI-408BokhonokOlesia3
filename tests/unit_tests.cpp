@@ -1,4 +1,3 @@
-
 #include <gtest/gtest.h>
 #include "math_operations.h"
 #include <limits>
@@ -46,3 +45,4 @@ TEST(AdditionTest, MinAndZero) {
     EXPECT_EQ(add(std::numeric_limits<int>::min(), 0), std::numeric_limits<int>::min());
     EXPECT_EQ(add(0, std::numeric_limits<int>::min()), std::numeric_limits<int>::min());
 }
+I created a GoogleTest test file at tests/test_math_operations.cpp that exercises add(int a, int b) across typical cases (positives, negatives, mixed signs), identity with zero, commutativity, and some boundary-safe checks near int limits while avoiding signed overflow (which is undefined behavior)
