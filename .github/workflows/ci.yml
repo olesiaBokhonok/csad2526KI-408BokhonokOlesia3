@@ -1,4 +1,4 @@
-name: Cross-platform CI
+name: CI Build
 
 on:
   push:
@@ -12,15 +12,11 @@ on:
 
 jobs:
   cross_build:
-    name: cross_build
-    runs-on: ${{ matrix.os }}
+    name: Cross-platform build and test
     strategy:
-      fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
@@ -31,32 +27,38 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake
-
-      - name: Install CMake (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          choco install -y cmake
-          refreshenv || true
+        shell: bash
 
       - name: Install CMake (macOS)
         if: runner.os == 'macOS'
         run: |
           brew update
           brew install cmake
+        shell: bash
 
-      - name: Make build script executable (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: chmod +x ./ci.sh
-
-      - name: Build (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: ./ci.sh
-
-      - name: Build (Windows)
+      - name: Install CMake (Windows)
         if: runner.os == 'Windows'
+        run: choco install -y cmake --installargs '"ADD_CMAKE_TO_PATH=System"'
         shell: cmd
-        run: .\ci.cmd
 
-      - name: Deploy
-        run: echo "Deploy placeholder — replace with real deploy commands or script"
+      - name: Configure, build and run tests (Linux / macOS)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x ./ci.sh || true
+          ./ci.sh
+        shell: bash
+
+      - name: Configure, build and run tests (Windows)
+        if: runner.os == 'Windows'
+        run: .\ci.cmd Release
+        shell: cmd
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ matrix.os }}
+          path: |
+            build/hello
+            build/unit_tests
+            build/Release/hello.exe
+            build/Release/unit_tests.exe
