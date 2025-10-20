@@ -33,24 +33,24 @@ jobs:
           sudo apt-get install -y cmake
         shell: bash
 
-      - name: Install CMake (macOS)
+      - name: Install CMakeLists (macOS)
         if: matrix.os == 'macos-latest'
         run: |
           if ! command -v cmake >/dev/null 2>&1; then
             brew update
             brew install cmake
           else
-            echo "CMake already installed"
+            echo "CMakeLists already installed"
           fi
         shell: bash
 
-      - name: Install CMake (Windows)
+      - name: Install CMakeLists (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           if (-not (Get-Command cmake -ErrorAction SilentlyContinue)) {
             choco install cmake -y
           } else {
-            Write-Host "CMake already installed"
+            Write-Host "CMakeLists already installed"
           }
         shell: powershell
 
