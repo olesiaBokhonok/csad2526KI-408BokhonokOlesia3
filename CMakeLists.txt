@@ -36,20 +36,19 @@ include(GNUInstallDirs) # sets CMAKE_INSTALL_* dirs
 # Compiler warnings / flags
 # -------------------------
 if(MSVC)
-  target_compile_options_global = "/W4"
+  # Enable warning level 4 for MSVC
+  add_compile_options(/W4)
 else()
-  # Enable common warnings for gcc/clang
+  # Enable common warnings for GCC/Clang
   add_compile_options(-Wall -Wextra -Wpedantic)
-  # Treat warnings as errors if requested
+
+  # Optionally treat warnings as errors
   option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
   if(WARNINGS_AS_ERRORS)
-    if(MSVC)
-      add_compile_options(/WX)
-    else()
-      add_compile_options(-Werror)
-    endif()
+    add_compile_options(-Werror)
   endif()
 endif()
+
 
 # -------------------------
 # Optional sanitizers & coverage
