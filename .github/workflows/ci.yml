@@ -63,7 +63,7 @@ jobs:
 
       - name: Run build script (Windows)
         if: matrix.os == 'windows-latest'
-        run: .\ci.bat
+        run: .\ci.cmd
         shell: powershell
 
       - name: Deploy
