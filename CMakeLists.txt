@@ -73,58 +73,18 @@ endif()
 # Source and targets
 # -------------------------
 add_library(${PROJECT_NAME}_lib
-  # src/example.cpp
+  math_operations.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_lib
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_compile_features(${PROJECT_NAME}_lib PUBLIC cxx_std_17)
 
-# Example executable
-# add_executable(${PROJECT_NAME}_exe app/main.cpp)
-# target_link_libraries(${PROJECT_NAME}_exe PRIVATE ${PROJECT_NAME}_lib)
-
-# -------------------------
-# Installation
-# -------------------------
-install(TARGETS ${PROJECT_NAME}_lib
-  EXPORT ${PROJECT_NAME}Targets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-install(EXPORT ${PROJECT_NAME}Targets
-  FILE ${PROJECT_NAME}Targets.cmake
-  NAMESPACE ${PROJECT_NAME}::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-)
-
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
-  VERSION ${PROJECT_VERSION}
-  COMPATIBILITY AnyNewerVersion
-)
-
-configure_package_config_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-  NO_CHECK_REQUIRED_COMPONENTS_MACRO
-)
-
-install(FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-)
+add_executable(${PROJECT_NAME}_exe main.cpp)
+target_link_libraries(${PROJECT_NAME}_exe PRIVATE ${PROJECT_NAME}_lib)
 
 # -------------------------
 # Testing (GoogleTest via FetchContent)
@@ -140,22 +100,21 @@ if(BUILD_TESTING)
   )
   FetchContent_MakeAvailable(googletest)
 
-  set(TEST_SOURCES
-    tests/test_math_operations.cpp
+  add_executable(${PROJECT_NAME}_tests
+    tests/unit_tests.cpp
   )
 
-  add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES})
-  target_include_directories(${PROJECT_NAME}_tests PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}
+  target_link_libraries(${PROJECT_NAME}_tests PRIVATE
+    gtest_main
+    ${PROJECT_NAME}_lib
   )
-  target_link_libraries(${PROJECT_NAME}_tests PRIVATE gtest_main ${PROJECT_NAME}_lib)
-  add_test(NAME ${PROJECT_NAME}_unit_tests COMMAND ${PROJECT_NAME}_tests)
-  set_tests_properties(${PROJECT_NAME}_unit_tests PROPERTIES TIMEOUT 120)
+
+  include(GoogleTest)
+  gtest_discover_tests(${PROJECT_NAME}_tests)
 endif()
 
 # -------------------------
-# Packaging (CPack)
+# Packaging (optional CPack)
 # -------------------------
 include(InstallRequiredSystemLibraries)
 set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
@@ -172,11 +131,8 @@ include(CPack)
 find_program(CLANG_FORMAT NAMES clang-format clang-format-12 clang-format-11)
 if(CLANG_FORMAT)
   file(GLOB_RECURSE ALL_CXX_SOURCE_FILES CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/src/*.cpp"
-    "${CMAKE_SOURCE_DIR}/include/*.h"
-    "${CMAKE_SOURCE_DIR}/include/*.hpp"
-    "${CMAKE_SOURCE_DIR}/app/*.cpp"
-    "${CMAKE_SOURCE_DIR}/tests/*.cpp"
+    "${CMAKE_SOURCE_DIR}/*.cpp"
+    "${CMAKE_SOURCE_DIR}/*.h"
   )
   add_custom_target(format
     COMMAND ${CLANG_FORMAT} -i ${ALL_CXX_SOURCE_FILES}
@@ -184,6 +140,3 @@ if(CLANG_FORMAT)
     COMMENT "Formatting source files with clang-format"
   )
 endif()
-
-
-# End of CMakeLists.txt
