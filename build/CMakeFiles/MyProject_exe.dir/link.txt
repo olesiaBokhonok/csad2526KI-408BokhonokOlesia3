@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/MyProject_exe.dir/link.d CMakeFiles/MyProject_exe.dir/main.cpp.o -o MyProject_exe  libMyProject_lib.a
