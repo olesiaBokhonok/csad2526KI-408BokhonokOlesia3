@@ -1,3 +1,5 @@
+name: CI Build
+
 on:
   push:
     branches:
@@ -8,64 +10,55 @@ on:
       - '*develop*'
       - '*master*'
 
-name: Continuous Integration
-
 jobs:
   cross_build:
-    name: Cross-platform build
-    runs-on: ${{ matrix.os }}
+    name: Cross-platform build and test
     strategy:
-      fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install CMake (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Install CMake (Linux)
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake
         shell: bash
 
       - name: Install CMake (macOS)
-        if: matrix.os == 'macos-latest'
+        if: runner.os == 'macOS'
         run: |
-          if ! command -v cmake >/dev/null 2>&1; then
-            brew update
-            brew install cmake
-          else
-            echo "CMake already installed"
-          fi
+          brew update
+          brew install cmake
         shell: bash
 
       - name: Install CMake (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          if (-not (Get-Command cmake -ErrorAction SilentlyContinue)) {
-            choco install cmake -y
-          } else {
-            Write-Host "CMake already installed"
-          }
-        shell: powershell
+        if: runner.os == 'Windows'
+        run: choco install -y cmake --installargs '"ADD_CMAKE_TO_PATH=System"'
+        shell: cmd
 
-      - name: Run build script (Linux / macOS)
-        if: matrix.os != 'windows-latest'
+      - name: Configure, build and run tests (Linux / macOS)
+        if: runner.os != 'Windows'
         run: |
           chmod +x ./ci.sh || true
           ./ci.sh
         shell: bash
 
-      - name: Run build script (Windows)
-        if: matrix.os == 'windows-latest'
-        run: .\ci.cmd
-        shell: powershell
+      - name: Configure, build and run tests (Windows)
+        if: runner.os == 'Windows'
+        run: .\ci.cmd Release
+        shell: cmd
 
-      - name: Deploy
-        run: |
-          echo "Deploy step placeholder — replace with your actual deploy commands"
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ matrix.os }}
+          path: |
+            build/hello
+            build/unit_tests
+            build/Release/hello.exe
+            build/Release/unit_tests.exe
