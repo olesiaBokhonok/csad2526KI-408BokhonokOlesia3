@@ -1,14 +1,17 @@
 #include <gtest/gtest.h>
-#include "../math_operations.h"
+#include "math_operations.h"
+#include <climits>
 
-TEST(BasicAddition, HandlesPositiveNumbers) {
-    EXPECT_EQ(math_ops::add(3, 3), 6);
+using math_ops::add;
+
+TEST(MathOperationsTest, AddBasicCases) {
+    EXPECT_EQ(add(0, 0), 0);
+    EXPECT_EQ(add(2, 3), 5);
+    EXPECT_EQ(add(-1, 1), 0);
+    EXPECT_EQ(add(-5, -7), -12);
 }
 
-TEST(BasicAddition, HandlesNegativeAndPositive) {
-    EXPECT_EQ(math_ops::add(-2, 2), 0);
-}
-
-TEST(BasicAddition, HandlesZeros) {
-    EXPECT_EQ(math_ops::add(0, 0), 0);
+TEST(MathOperationsTest, AddEdgeCases) {
+    EXPECT_EQ(add(INT_MAX, 0), INT_MAX);    // INT_MAX + 0
+    EXPECT_EQ(add(0, INT_MIN), INT_MIN);    // INT_MIN + 0
 }
