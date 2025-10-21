@@ -2,13 +2,13 @@
 #include "../math_operations.h"
 
 TEST(BasicAddition, HandlesPositiveNumbers) {
-    EXPECT_EQ(add(3, 3), 6);
+    EXPECT_EQ(math_ops(3, 3), 6);
 }
 
 TEST(BasicAddition, HandlesNegativeAndPositive) {
-    EXPECT_EQ(add(-2, 2), 0);
+    EXPECT_EQ(math_ops(-2, 2), 0);
 }
 
 TEST(BasicAddition, HandlesZeros) {
-    EXPECT_EQ(add(0, 0), 0);
+    EXPECT_EQ(math_ops(0, 0), 0);
 }
