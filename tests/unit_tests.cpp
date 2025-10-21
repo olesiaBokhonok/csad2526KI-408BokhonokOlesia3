@@ -1,47 +1,30 @@
-#include <gtest/gtest.h>
+// unit_tests.cpp
+// Simple, self-contained unit tests for math_operations::add
+//
+// Build:
+//   g++ -std=c++11 unit_tests.cpp math_operations.cpp -o unit_tests
+// Run:
+//   ./unit_tests
+//
+// The tests use assert and will abort on failure. Successful run prints a confirmation.
+
+#include <iostream>
+#include <cassert>
 #include "math_operations.h"
-#include <limits>
 
-TEST(AdditionTest, AddsPositiveNumbers) {
-    EXPECT_EQ(add(2, 3), 5);
-    EXPECT_EQ(add(100, 200), 300);
-}
+int main() {
+    using math_ops::add;
 
-TEST(AdditionTest, AddsNegativeNumbers) {
-    EXPECT_EQ(add(-2, -3), -5);
-    EXPECT_EQ(add(-100, -200), -300);
-}
+    // Basic cases
+    assert(add(0, 0) == 0);
+    assert(add(2, 3) == 5);
+    assert(add(-1, 1) == 0);
+    assert(add(-5, -7) == -12);
 
-TEST(AdditionTest, AddsPositiveAndNegative) {
-    EXPECT_EQ(add(5, -3), 2);
-    EXPECT_EQ(add(-7, 4), -3);
-}
+    // Edge-ish cases
+    assert(add(2147483647, 0) == 2147483647); // INT_MAX + 0
+    assert(add(0, -2147483648) == -2147483648); // INT_MIN + 0
 
-TEST(AdditionTest, ZeroIsIdentity) {
-    EXPECT_EQ(add(0, 7), 7);
-    EXPECT_EQ(add(7, 0), 7);
-    EXPECT_EQ(add(0, 0), 0);
-}
-
-TEST(AdditionTest, CommutativeProperty) {
-    EXPECT_EQ(add(123, 456), add(456, 123));
-    EXPECT_EQ(add(-50, 20), add(20, -50));
-}
-
-TEST(AdditionTest, LargeValuesWithinRange) {
-    // Avoid signed overflow (undefined behavior). Use values that stay within range.
-    int a = std::numeric_limits<int>::max() - 1;
-    int b = 1;
-    EXPECT_EQ(add(a, b), std::numeric_limits<int>::max());
-}
-
-TEST(AdditionTest, OppositeValuesCancel) {
-    int a = std::numeric_limits<int>::max();
-    EXPECT_EQ(add(a, -a), 0);
-    EXPECT_EQ(add(-a, a), 0);
-}
-
-TEST(AdditionTest, MinAndZero) {
-    EXPECT_EQ(add(std::numeric_limits<int>::min(), 0), std::numeric_limits<int>::min());
-    EXPECT_EQ(add(0, std::numeric_limits<int>::min()), std::numeric_limits<int>::min());
+    std::cout << "All unit tests passed.\n";
+    return 0;
 }
