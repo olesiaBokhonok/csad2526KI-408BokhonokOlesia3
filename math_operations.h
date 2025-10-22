@@ -1,15 +1,29 @@
+// math_operations.h
+// ------------------
+// Sections:
+//  1) File description and license (optional)
+//  2) Header guard
+//  3) Includes
+//  4) Namespace and declarations
+// ------------------
+
 #ifndef MATH_OPERATIONS_H
 #define MATH_OPERATIONS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <cstdint>
 
-/* Adds two integers and returns the sum. */
+/// @file math_operations.h
+/// @brief Declarations for simple mathematical operations.
+
+namespace math_ops {
+
+/// Adds two integers.
+///
+/// @param a First addend.
+/// @param b Second addend.
+/// @return The sum of a and b.
 int add(int a, int b);
 
-#ifdef __cplusplus
-}
-#endif
+} // namespace math_ops
 
-#endif /* MATH_OPERATIONS_H */
+#endif // MATH_OPERATIONS_H

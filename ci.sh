@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-# Cross-Unix CI build script using CMake and CTest (Linux, macOS)
-# Usage: ./scripts/ci-build.sh [Release|Debug]
+# build.sh — configure, build and run tests for the project
 set -euo pipefail
 
-BUILD_DIR=build
-BUILD_TYPE=${1:-Release}
+# Create and enter build directory
+mkdir -p build
+cd build
 
-# determine parallel jobs (nproc on Linux, sysctl on macOS, fallback to 2)
-JOBS=${JOBS:-$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 2)}
+# Configure the project (adjust -DCMAKE_BUILD_TYPE if needed)
+cmake ..
 
-# 1) Create build directory and configure
-cmake -S . -B "${BUILD_DIR}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}"
+# Build the project
+cmake --build .
 
-# 2) Build the project
-cmake --build "${BUILD_DIR}" --config "${BUILD_TYPE}" -- -j "${JOBS}"
+# Run tests via CTest and show output on failure
+ctest --output-on-failure
 
-# 3) Run tests with CTest
-ctest --test-dir "${BUILD_DIR}" --output-on-failure -C "${BUILD_TYPE}" -j "${JOBS}"
+# Exit back to repo root (optional)
+cd ..
